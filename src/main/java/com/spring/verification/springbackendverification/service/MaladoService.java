@@ -127,7 +127,7 @@ public class MaladoService {
         	
         	String passwordbase = confirmToken.get().getAppUser().getPassword();
         	
-        	System.out.print("Passwordbase "+ passwordbase + "PasswordEncoder :" + password);
+//        	System.out.print("Passwordbase "+ passwordbase + "PasswordEncoder :" + password);
         	
         	int passwordCompare = password.compareTo(passwordbase);
         	
