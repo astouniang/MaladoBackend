@@ -1,17 +1,12 @@
 package com.spring.verification.springbackendverification.service;
 
 import com.spring.verification.springbackendverification.email.EmailSender;
-//import com.orange.sonatel.Malado.Models.AdUser;
 import com.spring.verification.springbackendverification.model.AppUser;
-//import com.spring.verification.springbackendverification.model.RegistrationRequest;
 import com.spring.verification.springbackendverification.repository.AppUserRepository;
 import com.spring.verification.springbackendverification.security.EmailValidator;
 import com.spring.verification.springbackendverification.security.PasswordEncoder;
 import com.spring.verification.springbackendverification.security.token.ConfirmationToken;
 import com.spring.verification.springbackendverification.security.token.ConfirmationTokenService;
-
-//import springbackendverification.service.AppUser;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -45,31 +40,30 @@ public class MaladoUserService implements UserDetailsService {
                                 .orElseThrow(() -> new UsernameNotFoundException(String.format("User with email %s not found", email)));
     }
 
-    public String loginUpUser(String request){
-    	AppUser appUser = appUserRepository.getUser(request);
-    	System.out.print(appUser);
-//        boolean userExists = appUserRepository.findByEmail(appUser.getEmail()).isPresent();
-        boolean userExists = appUserRepository.findByLoginad(request).isPresent();
-        System.out.print(userExists);
+    public String loginUpUser(AppUser request){
+        System.out.println("===============================================");
+        System.out.println(request);
+    	AppUser appUser = appUserRepository.getUser(request.getLoginad());
+    	System.out.print("appUser = " + appUser);
+        boolean userExists = appUserRepository.findByLoginad(request.getLoginad()).isPresent();
+        System.out.print("userExists = " + userExists);
         
-        boolean tmc_prefixe = emailValidator.startsWith_tmc(request);
-        boolean stg_prefixe = emailValidator.startsWith_stg(request);
+        boolean tmc_prefixe = emailValidator.startsWith_tmc(request.getLoginad());
+        boolean stg_prefixe = emailValidator.startsWith_stg(request.getLoginad());
         
         if ((tmc_prefixe)||(stg_prefixe)) {
         	
             if (userExists==true) {
                 AppUser appUserPrevious =  appUserRepository.findByLoginad(appUser.getLoginad()).get();
-//                AppUser appUserPrevious =  appUserRepository.findByEmail(eappUser.getEmail()).get();
-                
                 Boolean isEnabled = appUserPrevious.getEnabled();
-//                if (appUserPrevious!=null) {
                     if (!isEnabled) {
                         boolean isValidEmail = emailValidator.test(appUser.getEmail());
                     	if (isValidEmail) {
                             String token = UUID.randomUUID().toString();
                             //A method to save user and token in this class
-                            saveConfirmationToken(appUserPrevious, token);                            
-                            String link = "http://localhost:8080/api/v1/registration/confirm?token=" + token;
+                            saveConfirmationToken(appUserPrevious, token);
+                           // String link = "http://localhost:8081/api/v1/registration/confirm?token=" + token;
+                            String link = token;
                             emailSender.sendEmail(appUser.getEmail(), buildEmail(appUser.getLastName(),appUser.getFirstName(), link));
                             return token;
                     	}
@@ -78,31 +72,24 @@ public class MaladoUserService implements UserDetailsService {
                     }
                    return String.format("User with email %s Connected !!!!", appUser.getEmail());
 //                }
-//                return String.format(" %s does not existe in database",request);
            }
             return String.format(" %s loginAD does not existe in database",request);
         }
-        return String.format("Please verif your loginAD format : STG_***** || TMC_*****");
+        return String.format("Please verifie your loginAD format : STG_***** || TMC_*****");
     }
     
     public String signUpUser(AppUser appUser) {
         boolean userExists = appUserRepository.findByEmail(appUser.getEmail()).isPresent();
         System.out.print(userExists);
         if (userExists==false) {
-//            MaladoUser appUserPrevious =  appUserRepository.findByEmail(appUser.getEmail()).get();
-//            Boolean isEnabled = appUserPrevious.getEnabled();
-//            if (!isEnabled) {
-//                return String.format("User create");
-//            }
-////            return String.format("User with email %s already exists!", appUser.getEmail());
             String encodedPassword = passwordEncoder.bCryptPasswordEncoder().encode(appUser.getPassword());
             appUser.setPassword(encodedPassword);
             //Saving the user after encoding the password
             appUserRepository.save(appUser);
             //Returning token
-            return String.format("User create");
+            return String.format("l'utilisateur a été créé avec succés");
         }
-        return String.format("User Existe in database");
+        return String.format("l'Utilisateur existe déja dans la base ");
     }
     
     private void saveConfirmationToken(AppUser appUser, String token) {
@@ -173,7 +160,7 @@ public class MaladoUserService implements UserDetailsService {
                 "      <td width=\"10\" valign=\"middle\"><br></td>\n" +
                 "      <td style=\"font-family:Helvetica,Arial,sans-serif;font-size:19px;line-height:1.315789474;max-width:560px\">\n" +
                 "        \n" +
-                "            <p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Bonjour " + lastname + firstname + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Thank you for registering. Please click on the below link to activate your account: </p><blockquote style=\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> <a href=\"" + link + "\">Activate Now</a> </p></blockquote>\n Link will expire in 15 minutes. <p>See you soon</p>" +
+                "            <p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\">Bonjour " + lastname + firstname + ",</p><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Thank you for registering. Please click on the below link to activate your account: </p><blockquote style=\"Margin:0 0 20px 0;border-left:10px solid #b1b4b6;padding:15px 0 0.1px 15px;font-size:19px;line-height:25px\"><p style=\"Margin:0 0 20px 0;font-size:19px;line-height:25px;color:#0b0c0c\"> Token :" + link + " </p></blockquote>\n Link will expire in 15 minutes. <p>See you soon</p>" +
                 "        \n" +
                 "      </td>\n" +
                 "      <td width=\"10\" valign=\"middle\"><br></td>\n" +
