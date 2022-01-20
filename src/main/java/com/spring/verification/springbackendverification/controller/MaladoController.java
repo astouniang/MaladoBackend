@@ -25,16 +25,12 @@ public class MaladoController {
         return registrationService.loginad(loginad);
     }
 
-    
-
     @PostMapping(path = "Token")
     public @ResponseBody String confirmToken(@RequestBody String token) {
         //return  String.format("token:"+token);
         return registrationService.confirmToken(token);
 
     }
-
-    
 
     @PostMapping(path = "Password")
     public String confirmPassword(@RequestBody String password,String confirmpassword,String token) {
